@@ -76,22 +76,29 @@ With a complete data frame
 ## How Does It Work?
 Thankfully, we are constantly being bombarded by RFI that gives us nanosecond accurate time and date information. There are plenty of options for GPS disciplined oscillators, but a GPS disciplined metronome would be absurd. So let's make one...
 
-A GPS module can pick up the satellite signals that will give us the current date and time. Using this, we can set the time on the metronome controller accurately as a basis for our clock signal. Many of the GPS modules can also provide a highly accurate PPS (Pulse Per Second) signal that could be used to very accurately drive the metronome. That is beside the point...
+Have you ever wondered how how some wall clocks synchronize their times automatically?  In the US, the NIST (National Institute of Standards and Technology) runs several radio stations that broadcast time information across the world.  [WWV and WWVH](https://www.nist.gov/pml/time-and-frequency-division/time-distribution/radio-station-wwv) operate on several frequencies with up to 10,000 Watts of output power. Station [WWVB](https://www.nist.gov/pml/time-and-frequency-division/time-distribution/radio-station-wwvb) operates at 60 kHz at 70,000 Watts and with several forms of modulation. This is the signal typically picked up by our clocks. Canada also has [CHU](https://en.wikipedia.org/wiki/CHU_(radio_station)) which operates on different frequencies and with different signalling mechanisms.  There are many others [throughout the world](https://en.wikipedia.org/wiki/Radio_clock#List_of_radio_time_signal_stations).
+
+WWV and WWVH work from a modified IRIG-H time code [as described by the NIST](https://www.nist.gov/pml/time-and-frequency-division/time-distribution/radio-station-wwv/wwv-and-wwvh-digital-time-code). WWVB uses a somewhat [different timecode format](https://www.nist.gov/pml/time-and-frequency-division/time-distribution/radio-station-wwvb/wwvb-time-code-format). For this project, we will be using the WWVB format so perhaps we can use it to sync off the shelf clocks some day.
+
+An [IRIG timecode](https://en.wikipedia.org/wiki/IRIG_timecode#IRIG_timecode) or variant will generally be a sequence of bits carrying time data to varying degrees of accuracy. Variants of the IRIG timecodes determine the bit rate and frame rates for delivery. Each piece of data is assigned a series of bits to represent its value. Numbers are usually going to be Binary Coded Decimal, Most Significant Digit format. Because the code is on a fixed cycle, some data values will drop bits or be interrupted by mark bits which manage the data frame.
+
+A GPS module can pick up the satellite signals that will give us the current date and time. Using this, we can set the time on the metronome controller accurately as a basis for our clock signal. These signals come in the form of [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) "sentences" that can include date, time, positioning, satellite, and ground course and speed data. Many of the GPS modules can also provide a highly accurate PPS (Pulse Per Second) signal that could be used to very accurately drive the metronome with microsecond accuracy. So we could track movement, speed, and frequency data over time for the metronome. That is beside the point...
 
 What we can do is use the GPS messages and the PPS signal to determine when any given minute starts. This is the basis for the data that we want send to the clock. We can now create a 60 bit [IRIG-H timecode](https://en.wikipedia.org/wiki/IRIG_timecode), in the style of radio station [WWVB](https://en.wikipedia.org/wiki/WWVB), which can be sent to to any receiver that requires synchronization. Just to demonstrate the this is not just some wibbly wobbly, timey wimey whimsy, we can throw in things like Daylight Savings Time, error correction, and date and still have some bits left over for flavor.
 
 ### Sending the Signal
 Drawing the rest of the owl will require that we find a way to use the almost once per second ticks of the metronome as a carrier for the 60 bits of data we need to send each minute. But first, let's talk about how we propagate the signal. In the interest of time, I'm just going to hard wire a connection between the metronome and the clock. The signal will be indicated by a HIGH output for the same duration of time of each tick of the metronome. The clock can measure the duration of each pulse to determine what is being sent. Future versions for the project will include as many signaling options as possible so we can share our time with as many devices as we can dream up. 
 
-- ISM band
+- ISM
+- CAN bus
 - Audio
 - Infrared
 - Ultrasonic
 - Physical triggers
 
-So now that we know the date and time (thanks, GPS!), we have to figure out how to get our time code modulated over the tell-tale heartbeat of the metronome. Since we're never ticking at exactly once per second, we can break the ticks into less than one second and more than one second. With that, we can manipulate each sequence of 60 ticks such that we can send our time code. There are a few problems with this that we need to solve...
+Now that we know the date and time (thanks, GPS!), we have to figure out how to get our time code modulated over the tell-tale heartbeat of the metronome. Since we're never ticking at exactly once per second, we can break the ticks into less than one second and more than one second. With that, we can manipulate each sequence of 60 ticks such that we can send our time code. There are a few problems with this that we need to solve...
 
-Now that we've got all that on the table, we can create our sixty bit time code, use our distribution mapping to create sixty less than/greater than one second pulses, trigger the servo for the metronome, and send our signal across the wire.
+With all that on the table, we can create our sixty bit time code, use our distribution mapping to create sixty less than/greater than one second pulses, trigger the servo for the metronome, and send our signal across the wire.
 
 The clock itself is as straightforward as the rest of this project. We receive the signal, detect the data frame, decode the data, and set the clock. Everything is amazingly complete, consistent, and well documented across the ESP32, MicroPython, and CYD (Cheap Yellow Display) ecosystem so what could possibly go wrong?
 
