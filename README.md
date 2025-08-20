@@ -114,13 +114,13 @@ The second issue is that one of the project constraints indicates that the swing
 
 #### Building the Data Frame
 
-Adding a MARK signal is easy enough. We know that a zero is going to be less than 1.0 seconds and a one is going to be greater than 1.0 seconds. Setting min/max values for zero and one bits allows us to set a pulse duration for mark bits that is less than the lowest zero or higher than the highest one. Since these pulses are going to be on the extreme edges of or distribution, they will skill the over all 60 second timeframe for our code. This should probably be fixed at some point. Following the lead from WWVB's time code, a data frame starts and ends with a MARK, signaling the receiver that a new data frame is starting.
+Following the lead from WWVB's time code, a data frame starts and ends with a MARK, signaling the receiver that a new data frame is starting. Adding a MARK signal is easy enough. We know that a zero is going to be less than 1.0 seconds and a one is going to be greater than 1.0 seconds. Setting min/max values for zero and one bits allows us to set a pulse duration for mark bits that is less than the lowest zero or higher than the highest one. Since these pulses are going to be on the extreme edges of our distribution, they will skew our results over the 60 bit code. There are seven mark bits in each data frame, so this can be significant. This should probably be fixed at some point. Perhaps manipulating the values could correct some of the overall bit skew. 
 
 #### Mapping the Distribution
 
 **Disclaimer**: I am not good at statistics, probabilities or math. Most of this work is probably incorrect. I would love for people to riff on this and come up with some better mapping techniques.
 
-Zero, one, and mark pulse durations are selected randomly from a mapped distribution file.  This distribution mapping can be created any way you'd like. If you want them to be as close to 1.0 seconds as possible, tighten it up. If you want it to be as far away as possible, you can do that to. Some sample code has been provided to test some randomly generated mappings.
+Zero, one, and mark pulse durations are selected randomly from a mapped distribution file.  This distribution mapping can be created any way you'd like. If you want them to be as close to 1.0 seconds as possible, tighten it up. If you want it to be as far away as possible, you can do that too. Some sample code has been provided to test some randomly generated mappings.
 
 To generate a series of mappings and pick the 'best' one, you can use [generate_mappings.py](mapping/generate_mappings.py). This will create a series of 'test.csv' mapping files and copy the best one to 'test_best.csv'.  You can replace the mappings.csv file with any mapping of your choosing.
 ```
@@ -144,7 +144,7 @@ Test 256, Mean: 0.85, Above: 0.85, Avg Time: 59.07
 Total Tests: 256, Best Mean: 0.45, Best Above: 0.70, Best Avg Time: 60.55
 ```
 
-
+It would be an interesting experiment to apply some machine learning or AI models to create an optimal algorithm for generating the pulse durations. 
 
 #### Adjusting for Bit Skew
 
@@ -262,4 +262,3 @@ Drawing screen...
 Data: 2025-08-19 07:32:00 M01100010M000000111M001000011M000100101M000000010M010100000M (!update)
 [03] Data[03]: 1  (1052432 us)
 ```
-
