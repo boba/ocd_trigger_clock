@@ -86,6 +86,7 @@ A GPS module can pick up the satellite signals that will give us the current dat
 
 What we can do is use the GPS messages and the PPS signal to determine when any given minute starts. This is the basis for the data that we want send to the clock. We can now create a 60 bit [IRIG-H timecode](https://en.wikipedia.org/wiki/IRIG_timecode), in the style of radio station [WWVB](https://en.wikipedia.org/wiki/WWVB), which can be sent to to any receiver that requires synchronization. Just to demonstrate the this is not just some wibbly wobbly, timey wimey whimsy, we can throw in things like Daylight Savings Time, error correction, and date and still have some bits left over for flavor.
 
+
 ### Sending the Signal
 Drawing the rest of the owl will require that we find a way to use the almost once per second ticks of the metronome as a carrier for the 60 bits of data we need to send each minute. But first, let's talk about how we propagate the signal. In the interest of time, I'm just going to hard wire a connection between the metronome and the clock. The signal will be indicated by a HIGH output for the same duration of time of each tick of the metronome. The clock can measure the duration of each pulse to determine what is being sent. Future versions for the project will include as many signaling options as possible so we can share our time with as many devices as we can dream up. 
 
@@ -98,7 +99,7 @@ Drawing the rest of the owl will require that we find a way to use the almost on
 
 Now that we know the date and time (thanks, GPS!), we have to figure out how to get our time code modulated over the tell-tale heartbeat of the metronome. Since we're never ticking at exactly once per second, we can break the ticks into less than one second and more than one second. With that, we can manipulate each sequence of 60 ticks such that we can send our time code. There are a few problems with this that we need to solve...
 
-With all that on the table, we can create our sixty bit time code, use our distribution mapping to create sixty less than/greater than one second pulses, trigger the servo for the metronome, and send our signal across the wire.
+With all that on the table, we can create our sixty bit time code, use our distribution mapping to create sixty less than/greater than one second pulses, trigger the servo for the metronome, and send our signal across the wire.  Here are some details on the [WWVB Timecode format](docs/Timecodes.md).
 
 The clock itself is as straightforward as the rest of this project. We receive the signal, detect the data frame, decode the data, and set the clock. Everything is amazingly complete, consistent, and well documented across the ESP32, MicroPython, and CYD (Cheap Yellow Display) ecosystem so what could possibly go wrong?
 
